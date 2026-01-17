@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Закрытие чеков</title>
+  <style>
+    body {
+      background-color: #e2e2e2;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 0;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      background: linear-gradient(to bottom, #b9b9b9 -45%, #2200ac 100%);
+      color: #fff;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h2 {
+      font-size: 13px;
+      margin-top: -20px;
+      padding-left: 50px;
+      text-align: center;
+      color: #b6b6b6;
+    }
+
+    h3{
+      margin-top: 15px;
+    }
+
+    form {
+      gap: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #result {
+      margin: -15px 10px 0 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #result h3,
+    #result p {
+      margin-bottom: 0;
+    }
+
+    input {
+      margin-top: 15px;
+      width: 120px;
+    }
+
+    button {
+      margin-bottom: 15px;
+      background-color: #3e23ae;
+      color: #fff;
+    }
+
+    input,
+    button {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      border-radius: 16px;
+      font-size: 16px;
+      padding: 6px;
+      border: solid .5px;
+      border-color: #2200ac;
+    }
+
+    .box {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .combo {
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .highlight {
+      background-color: #fc8b6469;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+    @media (max-width: 431px) {
+      h3 {
+
+        font-size: 15px;
+      }
+
+      input {
+        margin-top: 15px;
+      }
+
+      p,
+      strong,
+      ul {
+        font-size: 13px;
+      }
+
+      .box {
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Avenue69</h1>
+  <h2>Закрытие чека</h2>
+
+  <form onsubmit="calculate(); return false;">
+    <label>
+      <input type="number" id="amount" min="1">
+    </label>
+    <button type="submit">Рассчитать</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const prices = [
+      { price: 295, code: "1" }, { price: 315, code: "2" },
+      { price: 255, code: "3" }, { price: 255, code: "4" },
+      { price: 145, code: "5" }, { price: 255, code: "6" },
+      { price: 195, code: "7" }, { price: 55, code: "8" },
+      { price: 295, code: "9" }, { price: 185, code: "10" },
+      { price: 45, code: "11" }, { price: 135, code: "12" },
+      { price: 415, code: "13" }, { price: 195, code: "14" },
+      { price: 165, code: "15" }, { price: 65, code: "16" },
+      { price: 445, code: "17" }, { price: 315, code: "18" },
+      { price: 355, code: "19" }, { price: 175, code: "20" },
+      { price: 95, code: "21" }, { price: 285, code: "22" },
+      { price: 285, code: "23" }, { price: 195, code: "24" },
+      { price: 215, code: "25" }, { price: 345, code: "26" },
+      { price: 95, code: "27" }, { price: 215, code: "28" },
+      { price: 195, code: "29" }, { price: 365, code: "30" },
+      { price: 365, code: "31" }, { price: 285, code: "32" },
+      { price: 215, code: "33" }, { price: 245, code: "34" },
+      { price: 355, code: "35" }, { price: 295, code: "36" },
+      { price: 365, code: "37" }, { price: 165, code: "38" },
+      { price: 85, code: "39" }, { price: 155, code: "40" },
+      { price: 35, code: "41" }, { price: 225, code: "42" },
+      { price: 115, code: "43" }, { price: 195, code: "44" },
+      { price: 165, code: "45" }, { price: 185, code: "46" },
+      { price: 25, code: "47" }, { price: 175, code: "48" },
+      { price: 145, code: "49" }, { price: 295, code: "50" },
+      { price: 195, code: "51" }, { price: 30, code: "52" },
+      { price: 165, code: "53" }, { price: 75, code: "54" },
+      { price: 175, code: "55" }, { price: 85, code: "56" },
+      { price: 85, code: "57" }, { price: 85, code: "58" },
+      { price: 155, code: "59" }, { price: 55, code: "60" },
+      { price: 155, code: "61" }, { price: 175, code: "62" },
+      { price: 95, code: "63" }, { price: 175, code: "64" },
+      { price: 65, code: "65" }, { price: 395, code: "66" },
+      { price: 445, code: "67" }, { price: 225, code: "68" },
+      { price: 125, code: "69" }, { price: 425, code: "70" },
+      { price: 295, code: "71" }, { price: 225, code: "72" },
+      { price: 275, code: "73" }, { price: 215, code: "74" },
+      { price: 215, code: "75" }, { price: 215, code: "76" },
+      { price: 165, code: "77" }, { price: 165, code: "78" },
+      { price: 215, code: "79" }, { price: 125, code: "80" },
+      { price: 265, code: "81" }, { price: 385, code: "82" },
+      { price: 245, code: "83" }, { price: 285, code: "84" },
+      { price: 455, code: "85" }, { price: 415, code: "86" },
+      { price: 275, code: "87" }, { price: 345, code: "88" },
+      { price: 155, code: "89" }, { price: 185, code: "90" },
+      { price: 265, code: "91" }, { price: 295, code: "92" },
+      { price: 185, code: "93" }, { price: 215, code: "94" },
+      { price: 15, code: "95" }, { price: 255, code: "96" },
+      { price: 225, code: "97" }, { price: 265, code: "98" },
+      { price: 385, code: "99" }, { price: 165, code: "100" },
+      { price: 265, code: "101" }, { price: 265, code: "102" },
+      { price: 215, code: "103" }, { price: 285, code: "104" },
+      { price: 235, code: "105" }, { price: 285, code: "106" },
+      { price: 275, code: "107" }, { price: 345, code: "108" },
+      { price: 405, code: "109" }, { price: 385, code: "110" },
+      { price: 215, code: "111" }, { price: 105, code: "112" },
+      { price: 165, code: "113" }, { price: 115, code: "114" },
+      { price: 115, code: "115" }, { price: 105, code: "116" },
+      { price: 215, code: "117" }, { price: 645, code: "118" },
+      { price: 925, code: "119" }, { price: 395, code: "120" },
+      { price: 295, code: "121" }, { price: 315, code: "122" },
+      { price: 275, code: "123" }, { price: 315, code: "124" },
+      { price: 325, code: "125" }, { price: 285, code: "126" },
+      { price: 155, code: "127" }, { price: 315, code: "128" },
+      { price: 395, code: "129" }, { price: 345, code: "130" },
+      { price: 265, code: "131" }, { price: 75, code: "132" },
+      { price: 365, code: "133" }, { price: 45, code: "134" },
+      { price: 85, code: "135" }, { price: 29, code: "136" },
+      { price: 10, code: "137" }, { price: 19, code: "138" },
+      { price: 35, code: "139" }, { price: 35, code: "140" },
+      { price: 115, code: "141" }, { price: 115, code: "142" },
+      { price: 165, code: "143" }, { price: 125, code: "144" },
+      { price: 145, code: "145" }, { price: 125, code: "146" },
+      { price: 245, code: "147" }, { price: 185, code: "148" },
+      { price: 1, code: "149" } // <= 2 раза
+    ];
+
+    const MAX_RESULTS = 4;
+
+    function findAllCombinations(amount, pricesArray) {
+      const results = [];
+
+      function dfs(index, remaining, current) {
+        if (results.length >= 2) return;
+        if (remaining === 0) {
+          results.push([...current]);
+          return;
+        }
+        if (index >= pricesArray.length || remaining < 0) return;
+
+        const { price, code } = pricesArray[index];
+        const maxCount = price === 1 ? 2 : Math.floor(remaining / price);
+
+        for (let count = maxCount; count >= 0; count--) {
+          if (count > 0) current.push({ price, code, count });
+          dfs(index + 1, remaining - price * count, current);
+          if (count > 0) current.pop();
+        }
+      }
+
+      dfs(0, amount, []);
+      return results;
+    }
+
+
+    function calculate() {
+      const N = Number(document.getElementById("amount").value);
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (!N || N <= 0) {
+        resultDiv.innerHTML = '<p class="error">Введите корректную сумму</p>';
+        return;
+      }
+
+      // === ШАГ 0: проверка прямого совпадения price ===
+      const matches = prices
+        .filter(p => p.price === N)
+        .sort((a, b) => Number(b.code) - Number(a.code));
+
+      if (matches.length > 0) {
+        let html = `
+    <h3>Шаг 3. Есть прямые совпадения</h3>
+  `;
+
+        html += `<ul>`;
+        matches.forEach(m => {
+          html += `<li>${m.price} (code ${m.code})</li>`;
+        });
+        html += `</ul>`;
+
+        resultDiv.innerHTML = html;
+        return;
+      }
+
+
+      // === ШАГ 1 ===
+      const d = ((N % 10) + 10) % 10;
+      const k = (10 - d) % 10;
+      const R = N - 29 * k;
+
+      const amountForSplit = R > 0 ? R : N;
+
+      // === КОМБИНАЦИИ 1–2: САМЫЕ БОЛЬШИЕ PRICE ===
+      const pricesDesc = [...prices].sort((a, b) => b.price - a.price);
+      const firstTwo = findAllCombinations(amountForSplit, pricesDesc);
+
+      // === КОМБИНАЦИИ 3–4: КАК СЕЙЧАС ===
+      const lastTwo = findAllCombinations(amountForSplit, prices);
+
+      const finalCombos = [...firstTwo, ...lastTwo];
+
+      if (!finalCombos.length) {
+        resultDiv.innerHTML = '<p class="error">Комбинации не найдены</p>';
+        return;
+      }
+
+      let html = `<div class="box">`;
+
+      if (k > 0 && R > 0) {
+        html += `
+      <div>        
+        <p>Шаг 1. 29 (136) * ${k}</p>
+        <p>
+          29 × ${k} = ${29 * k}<br>
+          Остаток: <strong>${R}</strong>
+        </p>
+      </div>
+    `;
+      }
+
+      html += `
+    <div>
+      <p>Шаг 2. Разбиение остатка <b>${amountForSplit}</b></p>
+  `;
+
+      finalCombos.forEach((combo, index) => {
+        const has149 = combo.some(i => i.code === "149");
+
+        html += `
+      <div class="combo ${has149 ? 'highlight' : ''}">
+        <strong>Комбинация ${index + 1}</strong>
+        <ul>
+    `;
+
+        combo.forEach(i => {
+          html += `<li>${i.price} ( ${i.code} ) × ${i.count}</li>`;
+        });
+
+        html += `</ul></div>`;
+      });
+
+      html += `</div></div>`;
+      resultDiv.innerHTML = html;
+    }
+
+  </script>
+
+</body>
+
+</html>
