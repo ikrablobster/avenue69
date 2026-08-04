@@ -233,7 +233,7 @@
     const WRITEOFF_KEY = 'writeoffData';
     const PURCHASE_KEY = 'purchaseData';
 
-    const MILK = { cappuccino: 150, latte: 250, flatwhite: 100, milk: 50 };
+    const MILK = { cappuccino: 150, latte: 250, flatwhite: 100, milk: 80 };
 
     function today() {
       const d = new Date();
@@ -275,7 +275,7 @@
         <td>${r.cappuccino}</td>
         <td>${r.latte}</td>
         <td>${r.flatwhite}</td>
-        <td>${total}</td>
+        <td>${total*9}</td>
         <td>${milk}</td>
       </tr>`;
         });
