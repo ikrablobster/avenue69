@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Закрытие чеков</title>
+  <style>
+    body {
+      background-color: #e2e2e2;
+      font-family: Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    h1 {
+      margin: 0;
+      padding: 10px;
+      font-size: 25px;
+      text-align: center;
+      color: #fff;
+      background: linear-gradient(to bottom, #b9b9b9 -45%, #2200ac 100%);
+    }
+
+    h2 {
+      font-size: 10px;
+      margin-top: -14px;
+      padding-left: 35px;
+      text-align: center;
+      color: #b6b6b6;
+    }
+
+    h3 {
+      margin-top: 15px;
+    }
+
+    form {
+      gap: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #result {
+      margin: 0px 10px 0 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #result h3,
+    #result p {
+      margin-bottom: 0;
+    }
+
+    input {
+      margin-top: 15px;
+      width: 120px;
+    }
+
+    button {
+      background-color: #3e23ae;
+      color: #fff;
+    }
+
+    input,
+    button {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      border-radius: 16px;
+      font-size: 16px;
+      padding: 6px;
+      border: solid .5px;
+      border-color: #2200ac;
+    }
+
+    .box {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+    }
+
+    .combo {
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .highlight {
+      background-color: #fc8b6469;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+    @media (max-width: 431px) {
+      h3 {
+
+        font-size: 15px;
+      }
+
+      input {
+        margin-top: 15px;
+      }
+
+      p,
+      strong,
+      ul {
+        font-size: 13px;
+      }
+
+      .box {
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="logo_link" href="https://ikrablobster.github.io/avenue69/bar-calc.html">
+    <h1>Avenue69</h1>
+  </a>
+  <h2>Закрытие чека</h2>
+
+  <form onsubmit="calculate(); return false;">
+    <label>
+      <input type="number" id="amount" min="1">
+    </label>
+    <button type="submit">Рассчитать</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const prices = [
+      { price: 315, code: "1" }, { price: 345, code: "2" },
+      { price: 315, code: "3" }, { price: 245, code: "4" },
+      { price: 495, code: "5" }, { price: 355, code: "6" },
+      { price: 275, code: "7" }, { price: 55, code: "8" },
+      { price: 315, code: "9" }, { price: 185, code: "10" },
+      { price: 45, code: "11" }, { price: 195, code: "12" },
+      { price: 215, code: "13" }, { price: 245, code: "14" },
+      { price: 225, code: "15" }, { price: 65, code: "16" },
+      { price: 365, code: "17" }, { price: 325, code: "18" },
+      { price: 375, code: "19" }, { price: 395, code: "20" },
+      { price: 125, code: "21" }, { price: 285, code: "22" },
+      { price: 375, code: "23" }, { price: 215, code: "24" },
+      { price: 255, code: "25" }, { price: 375, code: "26" },
+      { price: 145, code: "27" }, { price: 295, code: "28" },
+      { price: 265, code: "29" }, { price: 195, code: "30" },
+      { price: 425, code: "31" }, { price: 325, code: "32" },
+      { price: 285, code: "33" }, { price: 295, code: "34" },
+      { price: 395, code: "35" }, { price: 355, code: "36" },
+      { price: 395, code: "37" }, { price: 195, code: "38" },
+      { price: 255, code: "39" }, { price: 95, code: "40" },
+      { price: 195, code: "41" }, { price: 195, code: "42" },
+      { price: 165, code: "43" }, { price: 295, code: "44" },
+      { price: 195, code: "45" }, { price: 195, code: "46" },
+      { price: 65, code: "47" }, { price: 275, code: "48" },
+      { price: 285, code: "49" }, { price: 355, code: "50" },
+      { price: 215, code: "51" }, { price: 285, code: "52" },
+      { price: 225, code: "53" }, { price: 395, code: "54" },
+      { price: 215, code: "55" }, { price: 105, code: "56" },
+      { price: 95, code: "57" }, { price: 105, code: "58" },
+      { price: 215, code: "59" }, { price: 85, code: "60" },
+      { price: 195, code: "61" }, { price: 245, code: "62" },
+      { price: 115, code: "63" }, { price: 295, code: "64" },
+      { price: 65, code: "65" }, { price: 485, code: "66" },
+      { price: 495, code: "67" }, { price: 295, code: "68" },
+      { price: 145, code: "69" }, { price: 495, code: "70" },
+      { price: 415, code: "71" }, { price: 465, code: "72" },
+      { price: 395, code: "73" }, { price: 265, code: "74" },
+      { price: 325, code: "75" }, { price: 265, code: "76" },
+      { price: 295, code: "77" }, { price: 215, code: "78" },
+      { price: 285, code: "79" }, { price: 185, code: "80" },
+      { price: 415, code: "81" }, { price: 315, code: "82" },
+      { price: 295, code: "83" }, { price: 425, code: "84" },
+      { price: 345, code: "85" }, { price: 485, code: "86" },
+      { price: 415, code: "87" }, { price: 355, code: "88" },
+      { price: 395, code: "89" }, { price: 185, code: "90" },
+      { price: 385, code: "91" }, { price: 345, code: "92" },
+      { price: 245, code: "93" }, { price: 365, code: "94" },
+      { price: 15, code: "95" }, { price: 385, code: "96" },
+      { price: 295, code: "97" }, { price: 365, code: "98" },
+      { price: 445, code: "99" }, { price: 235, code: "100" },
+      { price: 325, code: "101" }, { price: 345, code: "102" },
+      { price: 345, code: "103" }, { price: 355, code: "104" },
+      { price: 315, code: "105" }, { price: 355, code: "106" },
+      { price: 395, code: "107" }, { price: 395, code: "108" },
+      { price: 195, code: "109" }, { price: 395, code: "110" },
+      { price: 295, code: "111" }, { price: 295, code: "112" },
+      { price: 415, code: "113" }, { price: 385, code: "114" },
+      { price: 165, code: "115" }, { price: 165, code: "116" },
+      { price: 285, code: "117" }, { price: 1150, code: "118" },
+      { price: 1150, code: "119" }, { price: 525, code: "120" },
+      { price: 395, code: "121" }, { price: 395, code: "122" },
+      { price: 325, code: "123" }, { price: 235, code: "124" },
+      { price: 295, code: "125" }, { price: 385, code: "126" },
+      { price: 185, code: "127" }, { price: 375, code: "128" },
+      { price: 445, code: "129" }, { price: 415, code: "130" },
+      { price: 285, code: "131" }, { price: 135, code: "132" },
+      { price: 445, code: "133" }, { price: 45, code: "134" },
+      { price: 85, code: "135" }, { price: 29, code: "136" },
+      { price: 35, code: "137" }, { price: 19, code: "138" },
+      { price: 35, code: "139" }, { price: 185, code: "140" },
+      { price: 165, code: "141" }, { price: 155, code: "142" },
+      { price: 245, code: "143" }, { price: 225, code: "144" },
+      { price: 275, code: "145" }, { price: 145, code: "146" },
+      { price: 315, code: "147" }, { price: 295, code: "148" },
+      { price: 1, code: "149" }, // <= 2 раза
+      { price: 165, code: "150" },
+      { price: 175, code: "151" }, { price: 415, code: "152" },
+      { price: 465, code: "153" }, { price: 355, code: "154" },
+      { price: 155, code: "155" }, { price: 325, code: "156" },
+      { price: 365, code: "157" }, { price: 315, code: "158" },
+      { price: 365, code: "159" }, { price: 345, code: "160" },
+      { price: 295, code: "161" }, { price: 345, code: "162" },
+      { price: 195, code: "163" }, { price: 125, code: "164" },
+      { price: 125, code: "165" }, { price: 95, code: "166" },
+      { price: 175, code: "167" }, { price: 145, code: "168" },
+      { price: 215, code: "169" }, { price: 165, code: "170" },
+      { price: 215, code: "171" }, { price: 245, code: "172" },
+      { price: 255, code: "173" }, { price: 155, code: "174" },
+      { price: 195, code: "175" }
+    ];
+
+    const MAX_RESULTS = 4;
+
+    function findAllCombinations(amount, pricesArray) {
+      const results = [];
+
+      function dfs(index, remaining, current) {
+        if (results.length >= 2) return;
+        if (remaining === 0) {
+          results.push([...current]);
+          return;
+        }
+        if (index >= pricesArray.length || remaining < 0) return;
+
+        const { price, code } = pricesArray[index];
+        const maxCount = price === 1 ? 2 : Math.floor(remaining / price);
+
+        for (let count = maxCount; count >= 0; count--) {
+          if (count > 0) current.push({ price, code, count });
+          dfs(index + 1, remaining - price * count, current);
+          if (count > 0) current.pop();
+        }
+      }
+
+      dfs(0, amount, []);
+      return results;
+    }
+
+
+    function calculate() {
+      const N = Number(document.getElementById("amount").value);
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (!N || N <= 0) {
+        resultDiv.innerHTML = '<p class="error">Введите корректную сумму</p>';
+        return;
+      }
+
+      // === ШАГ 0: проверка прямого совпадения price ===
+      const matches = prices
+        .filter(p => p.price === N)
+        .sort((a, b) => Number(b.code) - Number(a.code));
+
+      if (matches.length > 0) {
+        let html = `
+    <p>Шаг 3. Есть прямые совпадения</p>
+  `;
+
+        html += `<ul>`;
+        matches.forEach(m => {
+          html += `<li>${m.price} (code ${m.code})</li>`;
+        });
+        html += `</ul>`;
+
+        resultDiv.innerHTML = html;
+        return;
+      }
+
+
+      // === ШАГ 1 ===
+      const d = ((N % 10) + 10) % 10;
+      const k = (10 - d) % 10;
+      const R = N - 29 * k;
+
+      const amountForSplit = R > 0 ? R : N;
+
+      // === КОМБИНАЦИИ 1–2: САМЫЕ БОЛЬШИЕ PRICE ===
+      const pricesDesc = [...prices].sort((a, b) => b.price - a.price);
+      const firstTwo = findAllCombinations(amountForSplit, pricesDesc);
+
+      // === КОМБИНАЦИИ 3–4: КАК СЕЙЧАС ===
+      const lastTwo = findAllCombinations(amountForSplit, prices);
+
+      const finalCombos = [...firstTwo, ...lastTwo];
+
+      if (!finalCombos.length) {
+        resultDiv.innerHTML = '<p class="error">Комбинации не найдены</p>';
+        return;
+      }
+
+      let html = `<div class="box">`;
+
+      if (k > 0 && R > 0) {
+        html += `
+      <div>        
+        <p>Шаг 1. 29 (136) * ${k}</p>
+        <p>
+          29 × ${k} = ${29 * k}<br>
+          Остаток: <strong>${R}</strong>
+        </p>
+      </div>
+    `;
+      }
+
+      html += `
+    <div>
+      <p>Шаг 2. Разбиение остатка <b>${amountForSplit}</b></p>
+  `;
+
+      finalCombos.forEach((combo, index) => {
+        const has149 = combo.some(i => i.code === "149");
+
+        html += `
+      <div class="combo ${has149 ? 'highlight' : ''}">
+        <strong>Комбинация ${index + 1}</strong>
+        <ul>
+    `;
+
+        combo.forEach(i => {
+          html += `<li>${i.price} ( ${i.code} ) × ${i.count}</li>`;
+        });
+
+        html += `</ul></div>`;
+      });
+
+      html += `</div></div>`;
+      resultDiv.innerHTML = html;
+    }
+
+  </script>
+
+</body>
+
+</html>
