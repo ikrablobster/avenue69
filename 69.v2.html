@@ -23,7 +23,7 @@
       font-size: 25px;
       text-align: center;
       color: #fff;
-      background: linear-gradient(to bottom, #b9b9b9 -45%, #2200ac 100%);
+      background: linear-gradient(to bottom, #b9b9b9 -45%, #06150c 100%);
     }
 
     h2 {
@@ -63,7 +63,7 @@
     }
 
     button {
-      background-color: #3e23ae;
+      background-color: #06150c;
       color: #fff;
     }
 
@@ -75,7 +75,7 @@
       font-size: 16px;
       padding: 6px;
       border: solid .5px;
-      border-color: #2200ac;
+      border-color: #a1a1a1;
     }
 
     .box {
@@ -126,7 +126,7 @@
   <a class="logo_link" href="https://ikrablobster.github.io/avenue69/bar-calc.html">
     <h1>Avenue69</h1>
   </a>
-  <h2>Закрытие чека</h2>
+  <h2>Закрытие чека v2.0</h2>
 
   <form onsubmit="calculate(); return false;">
     <label>
@@ -230,27 +230,62 @@
       { price: 195, code: "175" }
     ];
 
-    const MAX_RESULTS = 4;
+    // Сколько комбинаций ищем за один проход (раньше было заявлено как
+    // MAX_RESULTS = 4, но реально не использовалось — реальный предел был
+    // захардкожен числом 2 внутри dfs; теперь это один явный параметр).
+    const RESULTS_PER_PASS = 2;
 
-    function findAllCombinations(amount, pricesArray) {
+    // Код позиции с ценой 1 ₽ и лимит повторов для неё.
+    const SPECIAL_ITEM_CODE = "149";
+    const SPECIAL_ITEM_MAX_COUNT = 2;
+
+    // Позиции, из которых может браться шаг округления. Раньше число 29 и
+    // код "136" были захардкожены прямо в расчёте и в тексте — если бы цена
+    // этой позиции в меню изменилась, расчёт и подпись могли бы разойтись.
+    // Теперь оба берутся из самих данных. С новым меню код 138 даёт ту же
+    // роль с ценой 19 ₽, поэтому на каждый расчёт позиция для округления
+    // выбирается случайно: 29 (код 136) или 19 (код 138) с шансом 50/50.
+    const ROUNDING_ITEMS = [
+      prices.find(p => p.code === "136"),
+      prices.find(p => p.code === "138")
+    ];
+
+    // prices не меняется во время работы страницы, поэтому сортировку по
+    // убыванию цены можно сделать один раз при загрузке, а не при каждом
+    // нажатии кнопки.
+    const pricesDesc = [...prices].sort((a, b) => b.price - a.price);
+
+    function findAllCombinations(amount, pricesArray, maxResults = RESULTS_PER_PASS) {
       const results = [];
+      // Состояния (index:остаток), из которых точно не получить решение —
+      // без этого кэша перебор повторно обходит одни и те же тупиковые
+      // ветки при каждом вызове dfs.
+      const deadEnds = new Set();
 
       function dfs(index, remaining, current) {
-        if (results.length >= 2) return;
+        if (results.length >= maxResults) return true;
         if (remaining === 0) {
           results.push([...current]);
-          return;
+          return true;
         }
-        if (index >= pricesArray.length || remaining < 0) return;
+        if (index >= pricesArray.length || remaining < 0) return false;
+
+        const key = index + ':' + remaining;
+        if (deadEnds.has(key)) return false;
 
         const { price, code } = pricesArray[index];
-        const maxCount = price === 1 ? 2 : Math.floor(remaining / price);
+        const maxCount = price === 1 ? SPECIAL_ITEM_MAX_COUNT : Math.floor(remaining / price);
 
+        let foundAny = false;
         for (let count = maxCount; count >= 0; count--) {
           if (count > 0) current.push({ price, code, count });
-          dfs(index + 1, remaining - price * count, current);
+          const found = dfs(index + 1, remaining - price * count, current);
           if (count > 0) current.pop();
+          if (found) foundAny = true;
+          if (results.length >= maxResults) return true;
         }
+        if (!foundAny) deadEnds.add(key);
+        return foundAny;
       }
 
       dfs(0, amount, []);
@@ -259,11 +294,12 @@
 
 
     function calculate() {
-      const N = Number(document.getElementById("amount").value);
+      const rawValue = document.getElementById("amount").value;
+      const N = Number(rawValue);
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
-      if (!N || N <= 0) {
+      if (!rawValue || !Number.isInteger(N) || N <= 0) {
         resultDiv.innerHTML = '<p class="error">Введите корректную сумму</p>';
         return;
       }
@@ -290,14 +326,15 @@
 
 
       // === ШАГ 1 ===
+      // Позиция для округления выбирается случайно (50/50) при каждом расчёте.
+      const ROUNDING_ITEM = ROUNDING_ITEMS[Math.random() < 0.5 ? 0 : 1];
       const d = ((N % 10) + 10) % 10;
       const k = (10 - d) % 10;
-      const R = N - 29 * k;
+      const R = N - ROUNDING_ITEM.price * k;
 
       const amountForSplit = R > 0 ? R : N;
 
       // === КОМБИНАЦИИ 1–2: САМЫЕ БОЛЬШИЕ PRICE ===
-      const pricesDesc = [...prices].sort((a, b) => b.price - a.price);
       const firstTwo = findAllCombinations(amountForSplit, pricesDesc);
 
       // === КОМБИНАЦИИ 3–4: КАК СЕЙЧАС ===
@@ -315,9 +352,9 @@
       if (k > 0 && R > 0) {
         html += `
       <div>        
-        <p>Шаг 1. 29 (136) * ${k}</p>
+        <p>Шаг 1. ${ROUNDING_ITEM.price} (${ROUNDING_ITEM.code}) * ${k}</p>
         <p>
-          29 × ${k} = ${29 * k}<br>
+          ${ROUNDING_ITEM.price} × ${k} = ${ROUNDING_ITEM.price * k}<br>
           Остаток: <strong>${R}</strong>
         </p>
       </div>
@@ -330,7 +367,7 @@
   `;
 
       finalCombos.forEach((combo, index) => {
-        const has149 = combo.some(i => i.code === "149");
+        const has149 = combo.some(i => i.code === SPECIAL_ITEM_CODE);
 
         html += `
       <div class="combo ${has149 ? 'highlight' : ''}">
