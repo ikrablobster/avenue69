@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Закрытие чеков</title>
+  <style>
+    :root {
+      --bg: #e2e2e2;
+      --surface: #fff;
+      --ink: #111;
+      --muted: #555;
+      --line: #c9c9c9;
+      --brand: #06150c;
+      --brand-hover: #1c3a28;
+      --focus: #1a66d6;
+      --error: #b00020;
+      --special: #8a2400;
+      --special-border: #b5300a;
+      --special-bg: #fbdcd0;
+      --special-row: #f6bda8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .site-header {
+      padding: 10px 16px 12px;
+      text-align: center;
+      background: linear-gradient(to bottom, #b9b9b9 -45%, var(--brand) 100%);
+      position: relative;
+    }
+
+    .table-btn {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      min-height: 44px;
+      height: 44px;
+      padding: 0;
+      background-color: transparent;
+      border-radius: 10px;
+    }
+
+    .table-btn:hover,
+    .table-btn:active {
+      background-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .table-btn:focus-visible {
+      outline-color: #fff;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .subtitle {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: #d4d4d4;
+    }
+
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 32px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: -6px;
+    }
+
+    input,
+    button {
+      width: 100%;
+      min-height: 52px;
+      font-family: inherit;
+      border-radius: 14px;
+    }
+
+    input {
+      padding: 8px 12px;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid #8a8a8a;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    button {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      background-color: var(--brand);
+      border: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background-color 150ms ease-out;
+    }
+
+    button:hover,
+    button:active {
+      background-color: var(--brand-hover);
+    }
+
+    #result {
+      margin-top: 20px;
+    }
+
+    .result-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .combo {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .combo-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .combo-head h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .combo-head span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th,
+    td {
+      padding: 7px 6px;
+      text-align: right;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    td.code {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    th,
+    td:not(:first-child) {
+      white-space: nowrap;
+    }
+
+    tfoot td:first-child {
+      white-space: nowrap;
+    }
+
+    .dish {
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    tfoot td {
+      border-bottom: 0;
+      font-weight: 700;
+    }
+
+    .highlight {
+      background-color: var(--special-bg);
+      border: 2px solid var(--special-border);
+    }
+
+    .highlight th,
+    .highlight .combo-head span {
+      color: #442015;
+    }
+
+    .highlight th,
+    .highlight td {
+      border-bottom-color: #dc9d86;
+    }
+
+    .highlight tfoot td {
+      border-bottom: 0;
+    }
+
+    tr.special td {
+      background-color: var(--special-row);
+      font-weight: 700;
+    }
+
+    .special-note {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      color: #fff;
+      background-color: var(--special);
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .direct-hint {
+      margin: 0 0 10px;
+    }
+
+    .code-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .code-chip {
+      min-width: 56px;
+      max-width: 100%;
+      padding: 6px 12px;
+      font-size: 20px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background: var(--bg);
+      border-radius: 10px;
+    }
+
+    .error {
+      margin: 0;
+      color: var(--error);
+      font-weight: 700;
+    }
+
+    .menu-tools {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #b5b5b5;
+    }
+
+    #menu-status {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    #menu-status.error {
+      color: var(--error);
+    }
+
+    .btn-secondary {
+      min-height: 48px;
+      font-size: 16px;
+      color: var(--brand);
+      background-color: transparent;
+      border: 1px solid var(--brand);
+    }
+
+    .btn-secondary:hover,
+    .btn-secondary:active {
+      background-color: #d2d2d2;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="logo_link" href="https://ikrablobster.github.io/avenue69/bar-calc.html">
+      <h1>Avenue69</h1>
+    </a>
+    <p class="subtitle">Закрытие чека v2.0</p>
+    <button type="button" id="menu-upload" class="table-btn" aria-label="Подключить новую таблицу кодов"
+      title="Подключить новую таблицу кодов">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true" focusable="false">
+        <rect x="1" y="1" width="28" height="28" rx="5" fill="#21a366" />
+        <path d="M6 6h18v18H6z M6 12h18 M6 18h18 M12 6v18" fill="none" stroke="#fff" stroke-width="2" />
+      </svg>
+    </button>
+  </header>
+
+  <main>
+    <form novalidate onsubmit="calculate(); return false;">
+      <label for="amount">Сумма чека, ₴</label>
+      <input type="number" id="amount" inputmode="numeric" min="1" step="1" autocomplete="off" autofocus
+        onfocus="this.select()">
+      <button type="submit">Рассчитать</button>
+    </form>
+
+    <div id="result" aria-live="polite"></div>
+
+    <section class="menu-tools" aria-label="Таблица кодов">
+      <p id="menu-status" aria-live="polite">Загружаю меню…</p>
+      <button type="button" id="menu-download" class="btn-secondary" hidden>Скачать menu.json</button>
+      <input type="file" id="menu-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+    </section>
+  </main>
+
+  <script>
+    let prices = [];
+
+    // Сколько комбинаций ищем за один проход (раньше было заявлено как
+    // MAX_RESULTS = 4, но реально не использовалось — реальный предел был
+    // захардкожен числом 2 внутри dfs; теперь это один явный параметр).
+    const RESULTS_PER_PASS = 2;
+
+    // Код позиции с ценой 1 ₴ и лимит повторов для неё.
+    const SPECIAL_ITEM_CODE = "149";
+    const SPECIAL_ITEM_MAX_COUNT = 2;
+
+    const MENU_URL = "menu.json";
+    const MENU_STORAGE_KEY = "avenue69.menu";
+
+    let specialItem = null;
+
+    // Обычные позиции: всё меню, кроме кода 149. Он добавляется отдельно
+    // и только если без него сумму разложить нельзя (см. findSplit).
+    let regularPrices = [];
+    let pricesDesc = [];
+
+    // Текущее меню для кнопки «Скачать menu.json».
+    let activeMenu = null;
+
+    function applyMenu(menu) {
+      activeMenu = menu;
+      prices = menu.items;
+      specialItem = prices.find(p => p.code === SPECIAL_ITEM_CODE);
+      regularPrices = prices.filter(p => p.code !== SPECIAL_ITEM_CODE);
+      pricesDesc = [...regularPrices].sort((a, b) => b.price - a.price);
+    }
+
+    function isValidMenu(menu) {
+      return Boolean(menu) && Array.isArray(menu.items) && typeof menu.updatedAt === "string" &&
+        menu.items.some(i => i.code === SPECIAL_ITEM_CODE) &&
+        menu.items.every(i => /^\d+$/.test(i.code) && typeof i.name === "string" &&
+          Number.isInteger(i.price) && i.price > 0);
+    }
+
+    function readStoredMenu() {
+      try {
+        const menu = JSON.parse(localStorage.getItem(MENU_STORAGE_KEY));
+        return isValidMenu(menu) ? menu : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function storeMenu(menu) {
+      try {
+        localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(menu));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function fetchSiteMenu() {
+      try {
+        const response = await fetch(MENU_URL, { cache: "no-cache" });
+        if (!response.ok) return null;
+        const menu = await response.json();
+        return isValidMenu(menu) ? menu : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function setMenuStatus(text, isError = false) {
+      const status = document.getElementById("menu-status");
+      status.textContent = text;
+      status.classList.toggle("error", isError);
+    }
+
+    function describeMenu(menu) {
+      return `позиций: ${menu.items.length}, обновлено ${new Date(menu.updatedAt).toLocaleDateString("ru-RU")}`;
+    }
+
+    // Берём более свежее из двух меню: подключённое в этом браузере
+    // или опубликованное на сайте в menu.json.
+    async function initMenu() {
+      const stored = readStoredMenu();
+      const site = await fetchSiteMenu();
+      const useStored = stored && (!site || stored.updatedAt > site.updatedAt);
+      const menu = useStored ? stored : site;
+
+      if (!menu) {
+        setMenuStatus("Меню не загружено. Подключите таблицу кодов значком в шапке.", true);
+        return;
+      }
+      applyMenu(menu);
+      setMenuStatus(`${useStored ? "Подключено в этом браузере" : "Меню сайта"}: ${describeMenu(menu)}`);
+    }
+
+    // Ошибка в содержимом таблицы: её текст показываем пользователю как есть.
+    class TableError extends Error { }
+
+    // Читает файлы из .xlsx (это zip-архив) средствами браузера.
+    function openZip(buffer) {
+      const view = new DataView(buffer);
+      let end = buffer.byteLength - 22;
+      while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end--;
+      if (end < 0) throw new TableError("Это не файл .xlsx");
+
+      const entries = new Map();
+      const decoder = new TextDecoder();
+      let p = view.getUint32(end + 16, true);
+      for (let i = 0; i < view.getUint16(end + 10, true); i++) {
+        const nameLength = view.getUint16(p + 28, true);
+        const name = decoder.decode(new Uint8Array(buffer, p + 46, nameLength)).replace(/^\//, "");
+        entries.set(name, {
+          method: view.getUint16(p + 10, true),
+          size: view.getUint32(p + 20, true),
+          offset: view.getUint32(p + 42, true)
+        });
+        p += 46 + nameLength + view.getUint16(p + 30, true) + view.getUint16(p + 32, true);
+      }
+
+      async function readText(name) {
+        const entry = entries.get(name);
+        const start = entry.offset + 30 + view.getUint16(entry.offset + 26, true) + view.getUint16(entry.offset + 28, true);
+        const bytes = new Uint8Array(buffer, start, entry.size);
+        if (entry.method === 0) return decoder.decode(bytes);
+        return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+      }
+
+      return { names: [...entries.keys()], readText };
+    }
+
+    function byTag(node, tag) {
+      return [...node.getElementsByTagNameNS("*", tag)];
+    }
+
+    function parseXml(text) {
+      return new DOMParser().parseFromString(text, "application/xml");
+    }
+
+    function textOf(node) {
+      return byTag(node, "t").map(t => t.textContent).join("");
+    }
+
+    // Строки листа: [{ number, cells: { A: значение, B: значение } }].
+    function sheetRows(sheetXml, sharedStrings) {
+      return byTag(parseXml(sheetXml), "row").map(row => {
+        const cells = {};
+        byTag(row, "c").forEach(cell => {
+          const column = cell.getAttribute("r").replace(/\d+/g, "");
+          const type = cell.getAttribute("t");
+          const value = byTag(cell, "v")[0]?.textContent;
+          if (type === "inlineStr") cells[column] = textOf(cell);
+          else if (type === "s") cells[column] = sharedStrings[Number(value)];
+          else if (value !== undefined) cells[column] = value;
+        });
+        return { number: Number(row.getAttribute("r")), cells };
+      });
+    }
+
+    const HEADER_NAMES = {
+      code: ["КОД"],
+      name: ["НАЗВА", "НАЗВАНИЕ"],
+      price: ["ЦІНА", "ЦЕНА"]
+    };
+
+    function clean(value) {
+      return String(value ?? "").replace(/\s+/g, " ").trim();
+    }
+
+    // Колонки таблицы, если в строке есть все три заголовка.
+    function findColumns(row) {
+      const columns = {};
+      for (const [column, value] of Object.entries(row.cells)) {
+        const header = clean(value).toUpperCase();
+        for (const [field, names] of Object.entries(HEADER_NAMES)) {
+          if (names.includes(header)) columns[field] = column;
+        }
+      }
+      return columns.code && columns.name && columns.price ? columns : null;
+    }
+
+    // Превращает строки листа в позиции меню. Любая ошибка отменяет загрузку,
+    // чтобы неполное меню не попало в расчёт.
+    function itemsFromRows(rows) {
+      const headerIndex = rows.findIndex(findColumns);
+      if (headerIndex < 0) throw new TableError("В таблице нет колонок КОД, НАЗВА и ЦІНА");
+      const columns = findColumns(rows[headerIndex]);
+
+      const items = [];
+      const seen = new Set();
+      for (const row of rows.slice(headerIndex + 1)) {
+        const code = clean(row.cells[columns.code]).replace(/\.0+$/, "");
+        const name = clean(row.cells[columns.name]);
+        const rawPrice = clean(row.cells[columns.price]).replace(",", ".");
+        if (!code && !name && !rawPrice) continue;
+
+        const price = Number(rawPrice);
+        if (!/^\d+$/.test(code)) throw new TableError(`Строка ${row.number}: неверный код`);
+        if (!name) throw new TableError(`Строка ${row.number}: нет названия`);
+        if (!rawPrice || !Number.isInteger(price) || price <= 0) {
+          throw new TableError(`Строка ${row.number}: цена должна быть целым числом больше нуля`);
+        }
+        if (seen.has(code)) throw new TableError(`Строка ${row.number}: код ${code} уже встречался`);
+        seen.add(code);
+        items.push({ code, name, price });
+      }
+
+      if (!seen.has(SPECIAL_ITEM_CODE)) throw new TableError(`В таблице нет кода ${SPECIAL_ITEM_CODE}`);
+      return items;
+    }
+
+    async function readTableRows(buffer) {
+      const zip = openZip(buffer);
+      const stringsFile = "xl/sharedStrings.xml";
+      const sharedStrings = zip.names.includes(stringsFile)
+        ? byTag(parseXml(await zip.readText(stringsFile)), "si").map(textOf)
+        : [];
+
+      const sheets = zip.names.filter(n => /^xl\/worksheets\/[^/]+\.xml$/.test(n)).sort();
+      for (const sheet of sheets) {
+        const rows = sheetRows(await zip.readText(sheet), sharedStrings);
+        if (rows.some(findColumns)) return rows;
+      }
+      throw new TableError("В таблице нет колонок КОД, НАЗВА и ЦІНА");
+    }
+
+    // Файл читается только в памяти этой страницы и нигде не сохраняется.
+    // В браузере остаётся лишь JSON с кодами, названиями и ценами.
+    async function connectTable(file) {
+      setMenuStatus("Читаю таблицу…");
+      try {
+        const items = itemsFromRows(await readTableRows(await file.arrayBuffer()));
+        const menu = { updatedAt: new Date().toISOString(), items };
+        applyMenu(menu);
+        const saved = storeMenu(menu);
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("menu-download").hidden = false;
+        setMenuStatus(saved
+          ? `Подключено в этом браузере: ${describeMenu(menu)}. Чтобы обновить меню у всех, скачайте menu.json и замените файл на сайте.`
+          : `Подключено до закрытия страницы: браузер не дал сохранить меню. ${describeMenu(menu)}.`);
+      } catch (error) {
+        const reason = error instanceof TableError ? error.message : "Не удалось прочитать файл. Нужна таблица .xlsx";
+        const current = activeMenu ? " Меню осталось прежним." : "";
+        setMenuStatus(`${reason}.${current}`.replace("..", "."), true);
+      }
+      // Кнопка в шапке, а статус внизу: показываем его, даже если результат длинный.
+      document.getElementById("menu-status").scrollIntoView({ block: "nearest" });
+    }
+
+    function downloadMenu() {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(activeMenu, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = MENU_URL;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+    }
+
+    function dishLabel(item) {
+      return `<span class="dish">(${escapeHtml(item.name)})</span>`;
+    }
+
+    function findAllCombinations(amount, pricesArray, maxResults = RESULTS_PER_PASS) {
+      const results = [];
+      // Состояния (index:остаток), из которых точно не получить решение —
+      // без этого кэша перебор повторно обходит одни и те же тупиковые
+      // ветки при каждом вызове dfs.
+      const deadEnds = new Set();
+
+      function dfs(index, remaining, current) {
+        if (results.length >= maxResults) return true;
+        if (remaining === 0) {
+          results.push([...current]);
+          return true;
+        }
+        if (index >= pricesArray.length || remaining < 0) return false;
+
+        const key = index + ':' + remaining;
+        if (deadEnds.has(key)) return false;
+
+        const { price, code, name } = pricesArray[index];
+        const maxCount = Math.floor(remaining / price);
+
+        let foundAny = false;
+        for (let count = maxCount; count >= 0; count--) {
+          if (count > 0) current.push({ price, code, name, count });
+          const found = dfs(index + 1, remaining - price * count, current);
+          if (count > 0) current.pop();
+          if (found) foundAny = true;
+          if (results.length >= maxResults) return true;
+        }
+        if (!foundAny) deadEnds.add(key);
+        return foundAny;
+      }
+
+      dfs(0, amount, []);
+      return results;
+    }
+
+    function uniqueCombos(combos) {
+      const seen = new Set();
+      return combos.filter(combo => {
+        const key = combo.map(i => i.code + 'x' + i.count).sort().join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    // Раскладывает сумму строго на цены из меню. Код 149 применяется только
+    // когда без него решения нет: пробуем 0 штук, затем 1, затем 2.
+    function findSplit(amount) {
+      for (let specialCount = 0; specialCount <= SPECIAL_ITEM_MAX_COUNT; specialCount++) {
+        const rest = amount - specialItem.price * specialCount;
+        if (rest < 0) break;
+
+        const combos = uniqueCombos([
+          ...findAllCombinations(rest, pricesDesc),   // самые большие цены
+          ...findAllCombinations(rest, regularPrices) // порядок меню
+        ]);
+
+        if (combos.length) {
+          if (specialCount === 0) return { specialCount, combos };
+          const specialLine = { ...specialItem, count: specialCount };
+          return { specialCount, combos: combos.map(combo => [...combo, specialLine]) };
+        }
+      }
+      return { specialCount: 0, combos: [] };
+    }
+
+    function countPieces(combo) {
+      return combo.reduce((sum, i) => sum + i.count, 0);
+    }
+
+    function renderCombo(combo, index) {
+      const total = combo.reduce((sum, i) => sum + i.price * i.count, 0);
+      const hasSpecial = combo.some(i => i.code === SPECIAL_ITEM_CODE);
+
+      const rows = combo.map(i => `<tr${i.code === SPECIAL_ITEM_CODE ? ' class="special"' : ''}>` +
+        `<td class="code">${i.code} ${dishLabel(i)}</td><td>${i.count}</td><td>${i.price} ₴</td><td>${i.price * i.count} ₴</td></tr>`
+      ).join('');
+
+      return `
+        <section class="combo${hasSpecial ? ' highlight' : ''}">
+          <div class="combo-head">
+            <h2>Комбинация ${index + 1}</h2>
+            <span>Позиций: ${countPieces(combo)}</span>
+          </div>
+          <table>
+            <thead><tr><th scope="col">Код</th><th scope="col">Кол-во</th><th scope="col">Цена</th><th scope="col">Сумма</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr><td colspan="3">Итого</td><td>${total} ₴</td></tr></tfoot>
+          </table>
+        </section>`;
+    }
+
+    function calculate() {
+      const input = document.getElementById("amount");
+      const rawValue = input.value;
+      const N = Number(rawValue);
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (!activeMenu) {
+        resultDiv.innerHTML = '<p class="error">Сначала подключите таблицу кодов</p>';
+        return;
+      }
+
+      if (!rawValue || !Number.isInteger(N) || N <= 0) {
+        resultDiv.innerHTML = '<p class="error">Введите целую сумму больше нуля</p>';
+        return;
+      }
+
+      // Убираем клавиатуру телефона, чтобы результат был виден целиком.
+      input.blur();
+
+      // Проверка прямого совпадения price (код 149 сюда не входит)
+      const matches = regularPrices
+        .filter(p => p.price === N)
+        .sort((a, b) => Number(b.code) - Number(a.code));
+
+      if (matches.length > 0) {
+        const chips = matches.map(m => `<li class="code-chip">${m.code} ${dishLabel(m)}</li>`).join('');
+
+        resultDiv.innerHTML = `
+          <p class="result-title">Сумма ${N} ₴ — прямое совпадение</p>
+          <section class="combo">
+            <p class="direct-hint">Достаточно одного кода на выбор:</p>
+            <ul class="code-chips">${chips}</ul>
+          </section>`;
+        return;
+      }
+
+
+      const { specialCount, combos: finalCombos } = findSplit(N);
+
+      if (!finalCombos.length) {
+        resultDiv.innerHTML = `<p class="error">Комбинации не найдены: сумму ${N} ₴ нельзя разложить на коды меню</p>`;
+        return;
+      }
+
+      let html = `<p class="result-title">Разбиение суммы ${N} ₴</p>`;
+
+      if (specialCount > 0) {
+        html += `<p class="special-note">Без кода ${SPECIAL_ITEM_CODE} решения нет: нужен × ${specialCount}</p>`;
+      }
+
+      // Сверху комбинация, которую быстрее всего пробить.
+      html += [...finalCombos]
+        .sort((a, b) => countPieces(a) - countPieces(b))
+        .map(renderCombo)
+        .join('');
+
+      resultDiv.innerHTML = html;
+    }
+
+    document.getElementById("menu-upload").addEventListener("click", () => {
+      document.getElementById("menu-file").click();
+    });
+
+    document.getElementById("menu-download").addEventListener("click", downloadMenu);
+
+    document.getElementById("menu-file").addEventListener("change", event => {
+      const file = event.target.files[0];
+      event.target.value = "";
+      if (file) connectTable(file);
+    });
+
+    initMenu();
+  </script>
+
+</body>
+
+</html>
